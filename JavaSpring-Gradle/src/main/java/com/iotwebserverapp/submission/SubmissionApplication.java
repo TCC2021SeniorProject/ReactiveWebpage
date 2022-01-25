@@ -1,42 +1,23 @@
 package com.iotwebserverapp.submission;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Scanner;
 
 import javax.annotation.Resource;
 
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-
-import com.iotwebserverapp.submission.message.ResponseMessage;
 import com.iotwebserverapp.submission.service.FilesStorageServiceImpl;
 import com.iotwebserverapp.submission.process.PythonProcess;
 //
@@ -45,6 +26,8 @@ import com.iotwebserverapp.submission.process.PythonProcess;
 public class SubmissionApplication {
 	
 	String defaultOuputPath = "./ModelTranslator/data/output.py";
+	String downloadedOutputPath = "./uploads/output.py";
+	boolean fileSubmitted = false;
 	
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(SubmissionApplication.class);
@@ -61,9 +44,7 @@ public class SubmissionApplication {
     
 	@GetMapping("/")
     public String  home() {
-		//Removes all local file
-		storageService.deleteAll();
-    	storageService.init();
+		storageService.init();
     	return "web-translator";
     }
 	
@@ -71,7 +52,13 @@ public class SubmissionApplication {
     public String viewScript(Model model) {
     	String finalOutput = "";
         try {
-        	File file = new File(defaultOuputPath);
+        	File file;
+        	if (fileSubmitted) {
+        		file = new File(downloadedOutputPath);
+        	} else {
+        		file = new File(defaultOuputPath);
+        	}
+        	
         	Scanner in = new Scanner(file);
         	String line;
         	while (in.hasNextLine()) 
@@ -80,11 +67,12 @@ public class SubmissionApplication {
         		line = line.replaceAll("\t", "    ");
         		finalOutput+= line + "\n";
         	}
+        	model.addAttribute("scriptViewer", finalOutput);
         	in.close();
         } catch (IOException e) {
-        	e.printStackTrace();
+        	String message = "File currupted\n";
+        	model.addAttribute("submissionResult", message);
         }
-        model.addAttribute("scriptViewer", finalOutput);
         return "web-translator";
     }
     
@@ -103,14 +91,18 @@ public class SubmissionApplication {
                 storageService.save(file);
                 fileNames.add(file.getOriginalFilename());
             }); 
-            PythonProcess pyProcess = new PythonProcess();
-            pyProcess.executePythonScript(null, null);
             
             if (fileNames.isEmpty()) {
             	message += "Non of the files are uploaded \nClicking view will display a default result\n";
             	model.addAttribute("submissionResult", message);
+                PythonProcess pyProcess = new PythonProcess();
+                pyProcess.executePythonScript(null, null);
                 return "web-translator";
             }
+            fileSubmitted = true;
+            PythonProcess pyProcess = new PythonProcess();
+            File xmlFile = storageService.getMultipartToFile(files[0]);
+            pyProcess.executePythonScript(xmlFile, null);
             message += "Uploaded the file successfully: " + fileNames + "\n";
             model.addAttribute("submissionResult", message);
             return "web-translator";

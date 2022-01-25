@@ -17,30 +17,29 @@ public class PythonProcess {
 	public void selectDefaultPythonScript(final int exampleIndex) {
 		switch (exampleIndex) {
 			case (1):
-				executeDefaultPythonScript(firstExample);
+				executePythonScript(firstExample, null);
+				return;
 			case (2):
-				executeDefaultPythonScript(secondExample);
+				executePythonScript(secondExample, null);
+				return;
 			case (3):
+				executePythonScript(thirdExample, null);
 				return;
 			case (4):
+				executePythonScript(fourthExample, null);
 				return;
 			case (5):
+				executePythonScript(fifthExample, null);
 				return;
 			default:
+				executePythonScript(firstExample, null);
 				return;
 		}
 	}
-
-	public void executeDefaultPythonScript(File xmlFile) {
-	    try {
-	    	String cmd = "python ModelTranslator/data/myscript.py";
-	    } catch(Exception e) {
-	    	e.printStackTrace();
-	    }
-	}
 	
 	public void executePythonScript(File xmlFile, String[] predefFiles) {
-	    String cmd = "python3 ./ModelTranslator/src/main.py";
+		String xmlFileName = xmlFile.toString();
+	    String cmd = "python3 ./ModelTranslator/src/main.py " + xmlFileName;
 	    String s = null;
 	    
 	    try {

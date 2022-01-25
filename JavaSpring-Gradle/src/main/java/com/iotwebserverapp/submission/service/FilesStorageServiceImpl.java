@@ -1,19 +1,24 @@
 package com.iotwebserverapp.submission.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.stream.Stream;
 
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@ComponentScan
 public class FilesStorageServiceImpl implements FilesStorageService {
 
 	private String TMP_FOLDER = "uploads";
@@ -22,21 +27,24 @@ public class FilesStorageServiceImpl implements FilesStorageService {
 	@Override
 	public void init() {
 		try {
+			System.out.println("Working Directory = " + System.getProperty("user.dir"));
+			//Delete all existing files first
+			deleteAll();
 			Files.createDirectory(root);
 		} catch (IOException e) {
 			throw new RuntimeException("Could not initialize folder for upload!");
 		}
 	}
 
-	
-	//Single file save
+
 	@Override
 	public void save(MultipartFile file) {
-		//Delete all existing files first
-		//deleteAll();
-		System.out.println("Saving Single File");
 		try {
-			Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
+			Path copyLocation = Paths
+	                .get(TMP_FOLDER + File.separator + StringUtils.cleanPath(file.getOriginalFilename()));
+			System.out.println(this.root.resolve(file.getOriginalFilename()));
+			System.out.println(copyLocation);
+			Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()), StandardCopyOption.REPLACE_EXISTING);
 		} catch (Exception e) {
 			throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
 		}
@@ -58,17 +66,22 @@ public class FilesStorageServiceImpl implements FilesStorageService {
 		}
 	}
 
-  @Override
-  public void deleteAll() {
-    FileSystemUtils.deleteRecursively(root.toFile());
-  }
-
-  @Override
-  public Stream<Path> loadAll() {
-    try {
-      return Files.walk(this.root, 1).filter(path -> !path.equals(this.root)).map(this.root::relativize);
-    } catch (IOException e) {
-      throw new RuntimeException("Could not load the files!");
-    }
-  }
+	public File getMultipartToFile(MultipartFile file) {
+		Path path = this.root.resolve(file.getOriginalFilename());
+		return path.toFile();
+	}
+	
+	@Override
+	public void deleteAll() {
+		FileSystemUtils.deleteRecursively(root.toFile());
+	}
+	
+	@Override
+	public Stream<Path> loadAll() {
+		try {
+	        return Files.walk(this.root, 1).filter(path -> !path.equals(this.root)).map(this.root::relativize);
+	    } catch (IOException e) {
+	        throw new RuntimeException("Could not load the files!");
+	    }
+	}
 }
