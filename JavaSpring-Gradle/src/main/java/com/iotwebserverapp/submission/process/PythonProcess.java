@@ -38,8 +38,9 @@ public class PythonProcess {
 	}
 	
 	public void executePythonScript(File xmlFile, String[] predefFiles) {
+		System.out.println("File name:" + xmlFile.toString());
 		String xmlFileName = xmlFile.toString();
-	    String cmd = "python3 ./ModelTranslator/src/main.py " + xmlFileName;
+	    String cmd = "python3 ./ModelTranslator/src/main.py " + xmlFileName.toString();
 	    String s = null;
 	    
 	    try {

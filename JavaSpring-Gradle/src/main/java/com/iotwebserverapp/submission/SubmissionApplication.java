@@ -70,7 +70,7 @@ public class SubmissionApplication {
         	model.addAttribute("scriptViewer", finalOutput);
         	in.close();
         } catch (IOException e) {
-        	String message = "File currupted\n";
+        	String message = "File is not acceptable, cannot generate output\n";
         	model.addAttribute("submissionResult", message);
         }
         return "web-translator";
@@ -100,11 +100,13 @@ public class SubmissionApplication {
                 return "web-translator";
             }
             fileSubmitted = true;
+            
             PythonProcess pyProcess = new PythonProcess();
             File xmlFile = storageService.getMultipartToFile(files[0]);
             pyProcess.executePythonScript(xmlFile, null);
             message += "Uploaded the file successfully: " + fileNames + "\n";
             model.addAttribute("submissionResult", message);
+            
             return "web-translator";
         } catch (Exception e) {
             message = "Could not upload the files: " + e.toString();

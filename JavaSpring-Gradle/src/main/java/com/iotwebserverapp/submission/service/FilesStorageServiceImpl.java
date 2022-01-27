@@ -6,7 +6,6 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.stream.Stream;
 
 import org.springframework.context.annotation.ComponentScan;
@@ -40,11 +39,14 @@ public class FilesStorageServiceImpl implements FilesStorageService {
 	@Override
 	public void save(MultipartFile file) {
 		try {
+			String filename = StringUtils.cleanPath(file.getOriginalFilename());
+			filename = filename.toLowerCase().replaceAll(" ", "-");
 			Path copyLocation = Paths
-	                .get(TMP_FOLDER + File.separator + StringUtils.cleanPath(file.getOriginalFilename()));
+	                .get(TMP_FOLDER + File.separator + filename);
 			System.out.println(this.root.resolve(file.getOriginalFilename()));
 			System.out.println(copyLocation);
-			Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()), StandardCopyOption.REPLACE_EXISTING);
+			byte[] bytes = file.getBytes();
+			Files.write(copyLocation, bytes);
 		} catch (Exception e) {
 			throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
 		}
@@ -67,8 +69,11 @@ public class FilesStorageServiceImpl implements FilesStorageService {
 	}
 
 	public File getMultipartToFile(MultipartFile file) {
-		Path path = this.root.resolve(file.getOriginalFilename());
-		return path.toFile();
+		String filename = StringUtils.cleanPath(file.getOriginalFilename());
+		filename = filename.toLowerCase().replaceAll(" ", "-");
+		Path copyLocation = Paths
+                .get(TMP_FOLDER + File.separator + filename);
+		return copyLocation.toFile();
 	}
 	
 	@Override
