@@ -4,47 +4,27 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 public class PythonProcess {
-	
-	//Default files
-	final private File firstExample = new File("ModelTranslator/data/all_tran_example.xml");
-	final private File secondExample = new File("ModelTranslator/data/multi_temp.xml");
-	final private File thirdExample = new File("");
-	final private File fourthExample = new File("");
-	final private File fifthExample = new File("");
-	
-	public void selectDefaultPythonScript(final int exampleIndex) {
-		switch (exampleIndex) {
-			case (1):
-				executePythonScript(firstExample, null);
-				return;
-			case (2):
-				executePythonScript(secondExample, null);
-				return;
-			case (3):
-				executePythonScript(thirdExample, null);
-				return;
-			case (4):
-				executePythonScript(fourthExample, null);
-				return;
-			case (5):
-				executePythonScript(fifthExample, null);
-				return;
-			default:
-				executePythonScript(firstExample, null);
-				return;
-		}
-	}
-	
-	public void executePythonScript(File xmlFile, String[] predefFiles) {
+
+	public void executePythonScript(String xmlFile, List<File> predefFiles) {
 		System.out.println("File name:" + xmlFile.toString());
-		String xmlFileName = xmlFile.toString();
-	    String cmd = "python3 ./ModelTranslator/src/main.py " + xmlFileName.toString();
+	    String cmd = "python3 ./ModelTranslator/src/main.py " + xmlFile.replace('\\', '/');
 	    String s = null;
 	    
+	    if (predefFiles != null) {
+		    for (int i = 0; i < predefFiles.size(); i++) {
+		    	String fileName = predefFiles.get(i).toString();
+		    	fileName = fileName.replaceAll(" ", "-");
+		    	cmd += " " + fileName.replace('\\', '/');
+		    }	
+	    }
+	    
+	    System.out.println("Python command: " + cmd);
+	    
 	    try {
-	    	System.out.println("Running Python");
+	    	System.out.println("-----------Running Python--------------\n");
 	    	Process p = Runtime.getRuntime().exec(cmd);
 	    	
 	    	BufferedReader stdInput = new BufferedReader(
