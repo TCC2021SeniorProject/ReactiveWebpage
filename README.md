@@ -77,4 +77,4 @@ File Structure
                         SubmissionApplicationTests.java
 ```
 
-Final product web-app: http://18.217.147.207:8080/
+Final product web-app: http://18.188.79.185:8080/
