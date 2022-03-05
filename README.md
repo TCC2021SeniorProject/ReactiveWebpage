@@ -1,16 +1,24 @@
 # ReactiveWebpage
 Webapplication & webserver based on Java Spring - Gradle
 
+plugins:
+```
+	id 'org.springframework.boot' version '2.6.4'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'org.springframework.experimental.aot' version '0.11.3'
+```
 Dependencies:
-```build.gradle
-
-	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+```
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+	implementation 'org.springframework.boot:spring-boot-starter-web-services'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.session:spring-session-core'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
+	testImplementation 'io.projectreactor:reactor-test'
 ```
 
 File Structure
